@@ -41,6 +41,16 @@ A Python GUI tool for cleaning leaderboard images and extracting data using OCR 
    - **Select and Clean Image**: Clean crown icons and numbers from leaderboard images
    - **Sort and Export to CSV**: Process text files and export sorted data to CSV
 
+### Recommended Workflow
+
+For best results, follow this workflow:
+
+1. **Clean the image** using "Select and Clean Image" to remove crowns and numbers
+2. **Extract text** using [imagetotext.info](https://imagetotext.info) (recommended) or similar OCR service
+3. **Process the extracted text** using "Sort and Export to CSV" to convert to structured data
+
+**Note**: While the application includes OCR functions, using external services like imagetotext.info often provides better text extraction results, especially for complex layouts or low-quality images.
+
 ## Function Documentation
 
 ### Core Functions
@@ -73,6 +83,8 @@ A Python GUI tool for cleaning leaderboard images and extracting data using OCR 
 - `image_path`: Path to the input image
 
 **Returns**: Cleaned text string
+
+**Note**: For better OCR results, consider using external services like [imagetotext.info](https://imagetotext.info) after cleaning the image, then use the `correct_ocr_result()` function to process the extracted text.
 
 #### `correct_ocr_result(input_file_path, output_file_path)`
 **Purpose**: Processes OCR results and converts to CSV format.
