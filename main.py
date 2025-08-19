@@ -498,6 +498,7 @@ def process_image_gui():
     
     def sort_and_export_csv():
         """GUI function for sorting and exporting text data to CSV."""
+        import re
         try:
             # Select input text file
             input_file = filedialog.askopenfilename(
@@ -530,13 +531,32 @@ def process_image_gui():
             nicknames = []
             numbers = []
             
+            # Words that indicate ranks/titles (should be skipped)
+            rank_words = ['Leader', 'Superior', 'Officer', 'Veteran', 'Soldier']
+            
             for line in lines:
                 line = line.strip()
                 if not line:
                     continue
+                
+                # Skip rank/title lines
+                if any(rank.lower() in line.lower() for rank in rank_words):
+                    continue
                     
-                # Check if this line is a number (contains only digits and commas)
-                if all(c.isdigit() or c == ',' for c in line):
+                # Check if this line contains points (has digits and "points")
+                if 'points' in line.lower() and any(c.isdigit() for c in line):
+                    # Extract the number from the line
+                    number_match = re.search(r'([\d,]+)', line)
+                    if number_match:
+                        numbers.append(number_match.group(1).replace(',', ''))
+                    else:
+                        numbers.append("0")
+                # Handle "o points" or similar cases (no actual points)
+                elif 'points' in line.lower() and not any(c.isdigit() for c in line):
+                    # Skip these lines entirely - they don't have valid points
+                    continue
+                # Check if this line is just a number (contains only digits and commas)
+                elif all(c.isdigit() or c == ',' for c in line):
                     numbers.append(line.replace(',', ''))  # Remove commas
                 else:
                     nicknames.append(line)
@@ -552,6 +572,9 @@ def process_image_gui():
             # Sort by points (descending order)
             pairs.sort(key=lambda x: int(x[1]) if x[1].isdigit() else 0, reverse=True)
             
+            # Use the pairs directly since we already filtered out rank words during parsing
+            filtered_pairs = pairs
+            
             # Get selected delimiter
             selected_delimiter = delimiter_var.get()
             if selected_delimiter == "Tab":
@@ -563,10 +586,10 @@ def process_image_gui():
             with open(output_file, 'w', encoding='utf-8', newline='') as f:
                 writer = csv.writer(f, delimiter=selected_delimiter)
                 writer.writerow(['nickname', 'points'])
-                for nickname, points in pairs:
+                for nickname, points in filtered_pairs:
                     writer.writerow([nickname, points])
             
-            messagebox.showinfo("Success", f"Sorted data exported to:\n{output_file}\n\nTotal entries: {len(pairs)}")
+            messagebox.showinfo("Success", f"Sorted data exported to:\n{output_file}\n\nTotal entries: {len(filtered_pairs)} (filtered from {len(pairs)} original entries)")
             
         except Exception as e:
             messagebox.showerror("Error", f"An error occurred:\n{str(e)}")
